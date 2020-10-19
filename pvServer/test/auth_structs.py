@@ -26,14 +26,16 @@ class User:
 
 
 class Group:
-    def __init__(self, usernames, rules):
+    def __init__(self, usernames, rules, roles=None):
         self.usernames = usernames if usernames is not None else '*'
         self.rules = rules if rules is not None else []
+        self.roles = roles if roles is not None else []
 
     def to_dict(self):
         return {
             'usernames': self.usernames,
-            'rules': [rule.to_dict() for rule in self.rules]
+            'rules': [rule.to_dict() for rule in self.rules],
+            'roles': self.roles
         }
 
 

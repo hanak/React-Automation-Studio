@@ -21,7 +21,7 @@ from bson.objectid import ObjectId
 sys.path.insert(0, '../')
 sys.path.insert(0, 'userAuthentication/')
 
-from authenticate import  AuthoriseUser,AutheriseUserAndPermissions, AuthenticateUser
+from authenticate import AuthoriseUser, AutheriseUserAndPermissions, AuthenticateUser, AuthenticateInit
 from dotenv import load_dotenv
 load_dotenv()
 # Set this variable to "threading", "eventlet" or "gevent" to test the
@@ -1214,7 +1214,16 @@ def test_disconnect():
     disconnect(request.sid,namespace='/pvServer')
 
 
-if __name__ == '__main__':
+def start_server(authenticator=None):
+    """Start pvServer.
+
+    Parameters
+    ----------
+    authenticator : authenticator.Authenticator, optional
+        Instance of the authentication engine.
+        Use None for default authentication method.
+    """
+    AuthenticateInit(REACT_APP_DisableLogin, authenticator=authenticator)
     REACT_APP_PyEpicsServerURL=os.getenv('REACT_APP_PyEpicsServerBASEURL')
     REACT_APP_PyEpicsServerPORT=os.getenv('REACT_APP_PyEpicsServerPORT')
     if (REACT_APP_PyEpicsServerPORT is None):
@@ -1230,3 +1239,7 @@ if __name__ == '__main__':
             socketio.run(app,host='0.0.0.0',port=int(REACT_APP_PyEpicsServerPORT,10),  debug=True,use_reloader=False)
     else:
         socketio.run(app,host='127.0.0.1',  debug=True,use_reloader=False)
+
+
+if __name__ == '__main__':
+    start_server()

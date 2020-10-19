@@ -1,17 +1,14 @@
 from pvServer_test_case import PvServerTestCase
 import unittest
 import authenticate
+import pvAccess
+import userAuth
 import time
 import bcrypt
 from auth_structs import *
 
 
 class TestAuthenticate(PvServerTestCase):
-    @staticmethod
-    def del_auth_attr(name):
-        if hasattr(authenticate, name):
-            delattr(authenticate, name)
-
     @classmethod
     def setUpClass(cls):
         cls.DEFAULT_USERS = [
@@ -25,15 +22,12 @@ class TestAuthenticate(PvServerTestCase):
 
     def setUp(self):
         super().setUp()
-        authenticate.SECRET_PWD_KEY = '1234567890'
         self.enable_login()
 
     def disable_login(self):
         authenticate.REACT_APP_DisableLogin = False
-        self.del_auth_attr('users')
-        self.del_auth_attr('access')
-        self.del_auth_attr('UAGS')
-        self.del_auth_attr('knownUsers')
+        authenticate.users = None
+        authenticate.access = None
 
     def enable_login(self, users=None, user_groups=None, timestamp=None):
         timestamp = str(timestamp if timestamp is not None else int(time.time()))
@@ -41,20 +35,16 @@ class TestAuthenticate(PvServerTestCase):
             users = [u.to_dict() for u in self.DEFAULT_USERS]
 
         authenticate.REACT_APP_DisableLogin = True
-        authenticate.users = {
-            'users': users,
-            'timestamp': timestamp
-        }
-        authenticate.access = {
-            'userGroups': user_groups if user_groups is not None else self.DEFAULT_GROUPS,
-            'timestamp': timestamp
-        }
-        authenticate.UAGS = {
-            'users': authenticate.users['users'],
-            'userGroups': authenticate.access['userGroups'],
-            'timestamp': '{}{}'.format(authenticate.users['timestamp'], authenticate.access['timestamp'])
-        }
-        authenticate.knownUsers = authenticate.createJTWUserIDs(authenticate.UAGS)
+        authenticate.access = pvAccess.PvAccess()
+        authenticate.access.loadDict({
+            'userGroups': user_groups if user_groups is not None else self.DEFAULT_GROUPS},
+            timestamp)
+
+        authenticate.users = userAuth.UserAuth(
+            authenticate.access.timestamp,
+            userAuth.UsersJsonAuthenticator(None))
+        authenticate.users.loadSecretKey(None)
+        authenticate.users.loadDict(users, timestamp)
 
     def auth_user(self, username):
         for user in self.DEFAULT_USERS:
@@ -95,6 +85,43 @@ class TestAuthenticate(PvServerTestCase):
         self.assertEqual('john.doe@somewhere.else', record.get('username', None))
         self.assertEqual([], record.get('roles', None))
         self.assertIsNotNone(record.get('JWT', None))
+
+    def test_AuthenticateUser__jwt_of_various_users_differ(self):
+        record = authenticate.AuthenticateUser(
+            AuthRequest(
+                email='john.doe@somewhere.else',
+                password='johndoe').to_dict())
+        for i in range(10):
+            for user in self.DEFAULT_USERS:
+                if user.username != 'john.doe@somewhere.else':
+                    other_record = authenticate.AuthenticateUser(
+                        AuthRequest(
+                            email=user.username,
+                            password=user.password).to_dict())
+                    self.assertNotEqual(record['JWT'], other_record['JWT'])
+
+    def test_AuthenticateUser__get_roles_from_all_groups(self):
+        self.enable_login(user_groups={
+            'B-TEAM': Group(
+                ['john.doe@somewhere.else', 'joe.q.public@somewhere.else'],
+                [Rule('^pva://hyper:.*', read=True, write=True)],
+                ['cleanup','critical']).to_dict(),
+            'A-TEAM': Group(
+                ['john.doe@somewhere.else'],
+                [Rule('^pva://hyper:.*', read=False, write=False)],
+                ['critical','experts']).to_dict()
+        })
+        record = authenticate.AuthenticateUser(
+            AuthRequest(
+                email='john.doe@somewhere.else',
+                password='johndoe').to_dict())
+        self.assertEqual(['cleanup', 'critical', 'experts'], record.get('roles', None))
+
+        record = authenticate.AuthenticateUser(
+            AuthRequest(
+                email='joe.q.public@somewhere.else',
+                password='joeqpublic').to_dict())
+        self.assertEqual(['cleanup', 'critical'], record.get('roles', None))
 
     def test_AutheriseUserAndPermissions__match_default_group_if_no_other_group_matches(self):
         self.enable_login(user_groups={
@@ -234,6 +261,7 @@ class TestAuthenticate(PvServerTestCase):
         self.assertTrue(record['userAuthorised'])
         self.assertFalse(record['permissions']['read'])
         self.assertFalse(record['permissions']['write'])
+
 
 if __name__ == '__main__':
     unittest.main()

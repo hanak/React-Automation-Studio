@@ -7,11 +7,24 @@ import os
 import bcrypt
 
 import log
+import pvAccess
+import userAuth
 
-def randomString(stringLength=10):
-    """Generate a random string of fixed length """
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(stringLength))
+
+class SecretString:
+    """Secret string which will not dump to string implicitly.
+    """
+    def __init__(self, string):
+        self._string = string
+
+    @property
+    def string(self):
+        return self._string
+
+    @property
+    def utf8(self):
+        return self._string.encode('utf8')\
+            if self._string is not None else b''
 
 
 def mask_left(s, unmasked_len=3, min_masked=4):
@@ -49,177 +62,68 @@ def mask_email(email):
     return '@'.join(name_domain[:2])
 
 
-def loadFileSecretKey(filename):
-    try:
-        with open(filename, 'r') as f:
-            line=f.readline()
-#                print('user-id: '+userId +' email: '+email+' PW:'+pwd)
-        return line
-    except:
-        return randomString(16)
-#SECRET_KEY = loadFileSecretKey('userAuthentication/SECRET_KEY')
-SECRET_PWD_KEY = loadFileSecretKey('userAuthentication/users/SECRET_PWD_KEY')
-#print('SECRET_KEY: ',SECRET_KEY)
-#print('SECRET_PWD_KEY: ',SECRET_PWD_KEY)
+users=None
+access=None
 
-
-def createJTWUserIDs(UAGS):
-    try:
-        users=UAGS['users']
-        #print(users)
-        timestamp=UAGS['timestamp']
-        knownUsers={}
-        for userid in users:
-
-                JWTid=str(jwt.encode({'id':str(userid)+str(timestamp)}, SECRET_PWD_KEY, algorithm='HS256').decode('utf-8'))
-                #print(str(userid) +" :" +str(JWTid))
-                knownUsers[JWTid]={'username':userid['username'],'password':userid['password']}
-#                print('user-id: '+userId +' email: '+email+' PW:'+pwd)
-        #print("createJTWUserIDs users: " +str(knownUsers))
-        return knownUsers
-    except:
-        log.exception('Exception while creating JWT lookup table. No user will be allowed.')
-        return None
-
-
-def loadPvAccess():
-    try:
-        path='userAuthentication/users/pvAccess.json'
-        timestamp=os.path.getmtime(path)
-        with open(path) as json_file:
-            data = json.load(json_file)
-            data['timestamp']=str(timestamp)
-            return data
-    except:
-        log.exception('Exception while loading pvAccess.json.')
-        return None
-
-
-def loadUsers():
-    try:
-        path='userAuthentication/users/users.json'
-        timestamp=os.path.getmtime(path)
-        with open(path) as json_file:
-            data = json.load(json_file)
-            data['timestamp']=str(timestamp)
-            return data
-    except:
-        log.exception('Exception while loading users.json.')
-        return None
-
-REACT_APP_DisableLogin=not(os.getenv('REACT_APP_EnableLogin')=='true')
-if (not REACT_APP_DisableLogin) :
-    users=loadUsers()
-    access=loadPvAccess()
-    #UAGS=loadUsersAndGroups()
-    UAGS={}
-    UAGS['users']=users['users']
-    UAGS['userGroups']=access['userGroups']
-    UAGS['timestamp']=str(users['timestamp'])+str(access['timestamp'])
-    knownUsers=createJTWUserIDs(UAGS)
-    #knownUsers=loadFileUsers()
-    #print(knownUsers)
-    #print(UAGS)
-
-
-def checkPermissions(pvname,username):
-    #print("Checking permissions")
-    global UAGS
-    d={'read':False,'write':False,'roles':[]}
-    for uag in list(UAGS['userGroups'].keys()):
-        for usernames in UAGS['userGroups'][uag]['usernames']:
-            #print(usernames)
-            if ((username==usernames)or (usernames=="*")) :
-
-                for rules in UAGS['userGroups'][uag]['rules']:
-                    match=re.search(str(rules['rule']),str(pvname))
-                    if (match):
-                        #print(str(pvname)+" :"+str(rules['rule'])+" : "+ str(True))
-                        d['read']=rules['read']
-                        d['write']=rules['write']
-                if 'roles' in UAGS['userGroups'][uag]:
-                    for roles in UAGS['userGroups'][uag]['roles']:
-                        d['roles'].append(roles)
-                        #print("username: "+str(username) + ' role: '+ roles)
-    return d
-            #print(str(pvname)+" :"+str(rules['rule'])+" : "+ str(False))
-
-def checkUserRole(username):
-    #print("Checking permissions")
-    global UAGS
-    roles=[]
-    for uag in list(UAGS['userGroups'].keys()):
-        for usernames in UAGS['userGroups'][uag]['usernames']:
-            #print(usernames)
-            if ((username==usernames)or (usernames=="*")) :
-                if 'roles' in UAGS['userGroups'][uag]:
-                    for role in UAGS['userGroups'][uag]['roles']:
-                        roles.append(role)
-                        #print("username: "+str(username) + ' role: '+ role)
-    return roles
-
-
-
-#print(knownUsers)
 
 def AutheriseUserAndPermissions(JWT,pvname):
-    global knownUsers
-    #JWT=message['clientAuthorisation']
-#    print(' AuthoriseUser: ',JWT)
+    global users
     try:
-
-        #print(decoded_jwt)
-        if JWT in knownUsers:
-            username=knownUsers[JWT]['username']
-#            print("match")
-            permissions=checkPermissions(pvname,username)
-            #print(pvname+" :"+ str(permissions))
+        username = users.find_authorized(JWT)
+        if username is not None:
+            permissions=access.checkPermissions(pvname,username)
             d={'userAuthorised':True,'permissions':permissions}
             return d
-        else:
-#            print("no match")
-            return {'userAuthorised':False}
     except:
-        return {'userAuthorised':False}
-    #print(user)
+        log.exception('Unexpected exception in AutheriseUserAndPermissions. Denying authorization.')
+    return {'userAuthorised':False}
 
 
 def  AuthoriseUser(JWT):
-    global knownUsers
-#    print(' AuthoriseUser: ',JWT)
+    global users
+    global access
     try:
-        #print(decoded_jwt)
-        if JWT in knownUsers:
-            username=knownUsers[JWT]['username']
-            roles=checkUserRole(username)
-
-#            print("match")
+        username = users.find_authorized(JWT)
+        if username is not None:
+            roles=access.checkUserRole(username)
             return {'authorised':True,'username':username,'roles':roles}
-        else:
-#            print("no match")
-            return {'authorised':False}
     except:
-        return {'authorised':False}
-    #print(user)
+        log.exception('Unexpected exception in AuthoriseUser. Denying authorization.')
+    return {'authorised':False}
 
 
 def AuthenticateUser(user):
-    global knownUsers
-    if knownUsers!= None:
-        JWTUsernameAndPw=str(jwt.encode({'username':str(user['email']),'password':str(user['password'])}, SECRET_PWD_KEY, algorithm='HS256').decode('utf-8'))
-        #print("JWTUsernameAndPw: "+str(JWTUsernameAndPw))
-        keys=list(knownUsers.keys())
-        #print("keys", keys)
-        for JWT in knownUsers:
-            #print("JWT", JWT)
-            username=knownUsers[JWT]['username']
-            if user['email']==username:
-                if bcrypt.checkpw( user['password'].encode('utf-8'), knownUsers[JWT]['password'].encode('utf-8')):
-                    roles=checkUserRole(username)
-                    return {'JWT':JWT,'username':username,'roles':roles}
-
+    global users
+    global access
+    if users is None:
+        return None
+    try:
+        username = user.get('email', None)
+        jwtId = users.authenticate(
+            username,
+            SecretString(user.get('password', '')))
+        if jwtId is not None:
+            roles = access.checkUserRole(username)
+            return {'JWT':jwtId,'username':username,'roles':roles}
         else:
-            log.warning('Unknown user or invalid password: "{}"', mask_email(user.get('email', None)))
+            log.warning('Unknown user or invalid password: "{}"', mask_email(username))
             return None
-    return None
-    #print(user)
+    except:
+        log.exception('Unexpected exception in AuthoriseUser. Denying authentication.')
+        return None
+
+
+def AuthenticateInit(disabled=True, authenticator=None):
+    global users
+    global access
+    if disabled:
+        users = None
+        access = None
+    else:
+        access=pvAccess.init(
+            'userAuthentication/users/pvAccess.json')
+        users=userAuth.init(
+            access.timestamp,
+            'userAuthentication/users/SECRET_PWD_KEY',
+            'userAuthentication/users/users.json',
+            authenticator)
