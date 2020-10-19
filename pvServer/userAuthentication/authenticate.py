@@ -117,13 +117,19 @@ def AuthenticateInit(disabled=True, authenticator=None):
     global users
     global access
     if disabled:
-        users = None
-        access = None
+        print('Authentication and Authorisation is DISABLED')
+        users=None
+        access=None
     else:
+        print('Authentication and Authorisation is ENABLED')
+        print('Authentication engine: {}'.format('default' if authenticator is None else authenticator))
+
+        script_dir=os.path.dirname(__file__)
         access=pvAccess.init(
-            'userAuthentication/users/pvAccess.json')
+            os.path.join(script_dir, 'users', 'pvAccess.json'))
         users=userAuth.init(
             access.timestamp,
-            'userAuthentication/users/SECRET_PWD_KEY',
-            'userAuthentication/users/users.json',
+            os.path.join(script_dir, 'users', 'SECRET_PWD_KEY'),
+            os.path.join(script_dir, 'users', 'users.json'),
             authenticator)
+    print()

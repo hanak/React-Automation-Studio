@@ -60,11 +60,6 @@ app = Flask(__name__)
 
 
 REACT_APP_DisableLogin=not(os.getenv('REACT_APP_EnableLogin')=='true')
-if (REACT_APP_DisableLogin) :
-    print("Authenitcation and Authorisation is DISABLED")
-else:
-    print("Authenitcation and Authorisation is ENABLED")
-print("")
 
 socketio = SocketIO(app, async_mode=async_mode)
 thread = None
