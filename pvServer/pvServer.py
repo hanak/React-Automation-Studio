@@ -17,6 +17,8 @@ from epics import PV
 import os
 import sys
 import json
+import urllib.request
+import urllib.parse
 from bson.objectid import ObjectId
 sys.path.insert(0, '../')
 sys.path.insert(0, 'userAuthentication/')
@@ -30,7 +32,7 @@ load_dotenv()
 async_mode = 'gevent'
 print("")
 print('**************************************')
-print("React Automation Studio V2.0.1")
+print("React Automation Studio V2.1.0")
 print("")
 print("pvServer Environment Variables:")
 print("")
@@ -94,48 +96,55 @@ def check_pv_initialized_after_disconnect():
                         clientPVlist[pvname]['pv'].get(as_string=True)
                         d=clientPVlist[pvname]['pv'].get_with_metadata(with_ctrlvars=True,use_monitor=True)
                         if  (clientPVlist[pvname]['pv'].value)!=None :
-                            for keys in d:
-                                if(str(d[keys])=='nan'):
-                                    d[keys]=None
+                            if d!=None:
+                                for keys in d:
+                                    if(str(d[keys])=='nan'):
+                                        d[keys]=None
 
-                            if(clientPVlist[pvname]['pv'].count >1):
-                                d['value']=list(d['value'])
-                            if(clientPVlist[pvname]['pv'].count==0):
-                                d['value']=[]
-                            d['pvname']= pvname
-                            d['newmetadata']= 'True'
-                            d['connected']= '1'
-                            d['emitter']="request_pv_info: pv not in list"
-                            d['chid']=str(d['chid'])
-                            try:
-                                rw_room=str(pvname)+'rw'
-                                socketio.emit(pvname,d,room=rw_room,namespace='/pvServer')
-                                d['write_access']=False
-                                ro_room=str(pvname)+'ro'
-                                socketio.emit(pvname,d,room=ro_room,namespace='/pvServer')
-                                clientPVlist[pvname]['isConnected']=True
-                                clientPVlist[pvname]['initialized']=True
-                            #
-                            except TypeError as e:
-                                #"A type error exists in metadata dictionary and can't be converted into JSON format, previously this was caused by in CHID of type c_long(), a work arround exits, if CHID is not a c_long then try debugging")
-                                log.error("***EPICS PV info initial request info error: ")
-                                log.error("PV name: {}",pvname)
-                                log.error("PyEpics PV metadata: {}",d)
-                                log.error("Exception: {}",e)
-                                log.error("A type error exists in metadata dictionary and can't be converted into JSON format, previously this was caused by in CHID of type c_long(), a work arround exits, if CHID is not a c_long then try debugging")
-                                clientPVlist[pvname]['isConnected']=True
-                                clientPVlist[pvname]['initialized']=False
-                                log.error("Type: {}", type(d['value']))
-                                if ('epics.dbr.c_float_Array_0' in str(type(d['value']))):
-                                    log.info("type is epics.dbr.c_float_Array_0")
-                                d={}
+                                if(clientPVlist[pvname]['pv'].count >1):
+                                    d['value']=list(d['value'])
+                                if(clientPVlist[pvname]['pv'].count==0):
+                                    d['value']=[]
+                                if(clientPVlist[pvname]['pv'].count==1):
+                                    new_char_value=str(d['char_value'])
+                                    if (len(new_char_value)==0):
+                                        new_char_value=str(d['value'])
+                                    d['char_value']=new_char_value
+
                                 d['pvname']= pvname
-                                d['connected']= '0'
+                                d['newmetadata']= 'True'
+                                d['connected']= '1'
+                                d['emitter']="request_pv_info: pv not in list"
+                                d['chid']=str(d['chid'])
+                                try:
+                                    rw_room=str(pvname)+'rw'
+                                    socketio.emit(pvname,d,room=rw_room,namespace='/pvServer')
+                                    d['write_access']=False
+                                    ro_room=str(pvname)+'ro'
+                                    socketio.emit(pvname,d,room=ro_room,namespace='/pvServer')
+                                    clientPVlist[pvname]['isConnected']=True
+                                    clientPVlist[pvname]['initialized']=True
+                                #
+                                except TypeError as e:
+                                    #"A type error exists in metadata dictionary and can't be converted into JSON format, previously this was caused by in CHID of type c_long(), a work arround exits, if CHID is not a c_long then try debugging")
+                                    log.error("***EPICS PV info initial request info error: ")
+                                    log.error("PV name: {}",pvname)
+                                    log.error("PyEpics PV metadata: {}",d)
+                                    log.error("Exception: {}",e)
+                                    log.error("A type error exists in metadata dictionary and can't be converted into JSON format, previously this was caused by in CHID of type c_long(), a work arround exits, if CHID is not a c_long then try debugging")
+                                    clientPVlist[pvname]['isConnected']=True
+                                    clientPVlist[pvname]['initialized']=False
+                                    log.error("Type: {}", type(d['value']))
+                                    if ('epics.dbr.c_float_Array_0' in str(type(d['value']))):
+                                        log.info("type is epics.dbr.c_float_Array_0")
+                                    d={}
+                                    d['pvname']= pvname
+                                    d['connected']= '0'
 
-                                socketio.emit(pvname,d,room=str(pvname),namespace='/pvServer')
-                            except:
-                                log.exception("Unexpected error")
-                                raise
+                                    socketio.emit(pvname,d,room=str(pvname),namespace='/pvServer')
+                                except:
+                                    log.exception("Unexpected error")
+                                    raise
 
         # for watchEventName in clientDbWatchList :
         #     print("watchEventName")
@@ -254,8 +263,13 @@ def onValueChanges(pvname=None,count=None,char_value=None,severity=None,status=N
     pvname1='pva://'+str(pvname)
     if(clientPVlist[pvname1]['initialized']==True):
         if (float(count)== 1):
+           new_char_value=str(char_value)
+           if (len(new_char_value)==0):
+               new_char_value=str(value)
+
+
            socketio.emit(pvname1,
-              {'pvname': pvname1,'newmetadata': 'False','value': str(value),'char_value': str(char_value),'count':count, 'connected':'1', 'severity': severity,'timestamp':timestamp
+              {'pvname': pvname1,'newmetadata': 'False','value': str(value),'char_value': new_char_value,'count':count, 'connected':'1', 'severity': severity,'timestamp':timestamp
               },room='pva://'+str(pvname),namespace='/pvServer')
         else:
            d={'pvname': pvname1,'newmetadata': 'False','value': list((value)),'count':count, 'connected':'1', 'severity': severity,'timestamp':timestamp}
@@ -1132,7 +1146,90 @@ def databaseInsertOne(message):
     else:
         socketio.emit('redirectToLogIn',room=request.sid,namespace='/pvServer')
 
+@socketio.on('archiverRead', namespace='/pvServer')
+def archiverRead(message):
+    global clientPVlist,REACT_APP_DisableLogin
+    archiverURL= str(message['archiverURL'])
 
+    #print("databaseRead: SSID: ",request.sid,' dbURL: ', dbURL)
+    #print("message:",str(message))
+    authenticated=False
+    if REACT_APP_DisableLogin:
+        authenticated=True
+        accessControl={'userAuthorised':True,'permissions':{'read':True,'write':True}}
+    else :
+        accessControl=AutheriseUserAndPermissions(message['clientAuthorisation'],archiverURL)
+        authenticated=accessControl['userAuthorised']
+
+    if accessControl['userAuthorised'] :
+        if "arch://" in archiverURL:
+
+            str1=archiverURL.replace("arch://","")
+            strings=  str1.split(':')
+            try:
+                requestStr=str1.split("request:")[1]
+                request=json.loads(requestStr)
+            except:
+                raise Exception("Request not defined")
+
+
+            if(len(strings)>=1):
+                archiver= strings[0];
+
+
+                if ((len(archiver)>0)):
+                    write_access=False
+                    if(accessControl['permissions']['read']):
+                        if(accessControl['permissions']['write']):
+                            join_room(str(archiverURL)+'rw')
+                            write_access=True
+
+                        else:
+                            join_room(str(archiverURL)+'ro')
+                            write_access=False
+
+                        try:
+                            pv=request['pv']
+                            pv=pv.replace("pva://","")
+                            pv=urllib.parse.quote(pv)
+
+                            fromOptions=request['options']['from']
+
+                            fromOptions=urllib.parse.quote(fromOptions)
+                            toOptions=request['options']['to']
+
+                            toOptions=urllib.parse.quote(toOptions)
+                            parameters=request['options']['parameters']
+
+
+                            URL=str(os.environ[archiver])+'/retrieval/data/getData.json?pv='+pv+'&from='+fromOptions+'&to='+toOptions+parameters
+
+                            req = urllib.request.urlopen(URL)
+                            data = json.load(req)
+
+
+                            eventName='archiverReadData:'+archiverURL;
+
+                            d={'archiverURL': archiverURL,'write_access':write_access,'data': data}
+                            socketio.emit(eventName,d,str(archiverURL)+'rw',namespace='/pvServer')
+                            d={'archiverURL': archiverURL,'write_access':False,'data': data}
+                            socketio.emit(eventName,d,str(archiverURL)+'ro',namespace='/pvServer')
+                            return {'initialized':True}
+                        except:
+
+                            log.info('could not connect to Archiver: : {}',archiverURL)
+                            return {'initialized':False}
+
+
+
+
+
+
+
+        else:
+             log.info('Unkwown Archiver URL: : {}',archiverURL)
+    else:
+        socketio.emit('redirectToLogIn',room=request.sid,namespace='/pvServer')
 
 
 @socketio.on('AuthenticateClient', namespace='/pvServer')
