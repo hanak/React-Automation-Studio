@@ -339,7 +339,9 @@ def test_write(message):
                 except Exception as e:
                     log.error("***EPICS PV put error: ")
                     log.error("PV name: {}",pvname2)
-                    log.error("Value to put: {}",message['data'])
+                    log.error(
+                        "Value to put: {}",
+                        message.get('data', '<data missing>'))
                     log.error("Exception: {}",e)
 
 
@@ -348,7 +350,9 @@ def test_write(message):
         else:
             log.warning("***PV put error: write access denied ")
             log.warning("PV name: {}",message['pvname'])
-            log.warning("Value to put: {}",message['data'])
+            log.warning(
+                "Value to put: {}",
+                message.get('data', '<data missing>'))
     else:
         socketio.emit('redirectToLogIn',room=request.sid,namespace='/pvServer')
 
