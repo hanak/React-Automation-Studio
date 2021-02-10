@@ -32,7 +32,7 @@ load_dotenv()
 async_mode = 'gevent'
 print("")
 print('**************************************')
-print("React Automation Studio V2.1.0")
+print("React Automation Studio V2.2.0")
 print("")
 print("pvServer Environment Variables:")
 print("")
@@ -68,7 +68,7 @@ else:
     print("Authenitcation and Authorisation is ENABLED")
 print("")
 
-socketio = SocketIO(app, async_mode=async_mode)
+socketio = SocketIO(app,async_mode=async_mode,cors_allowed_origins='*')
 thread = None
 thread_lock = threading.Lock()
 
@@ -237,9 +237,9 @@ def dbWatchThread(watchEventName):
                             eventName=watchEventName
                             dbURL=clientDbWatchList[watchEventName]['dbURL']
                             d={'dbURL': dbURL,'write_access':True,'data': data}
-                            socketio.emit(eventName,d,str(dbURL)+'rw',namespace='/pvServer')
+                            socketio.emit(eventName,d,room=str(dbURL)+'rw',namespace='/pvServer')
                             d={'dbURL': dbURL,'write_access':False,'data': data}
-                            socketio.emit(eventName,d,str(dbURL)+'ro',namespace='/pvServer')
+                            socketio.emit(eventName,d,room=str(dbURL)+'ro',namespace='/pvServer')
 
                         except:
                             log.error("Unexpected error: {}",sys.exc_info()[0])
@@ -653,7 +653,7 @@ def databaseRead(message):
 
                             eventName='databaseData:'+dbURL;
                 #            print("eventName",eventName)
-                            socketio.emit(eventName,d,request.sid,namespace='/pvServer')
+                            socketio.emit(eventName,d,room=request.sid,namespace='/pvServer')
                             return "OK"
                         except:
                             log.error("Could not connect to MongoDB: {}",dbURL)
@@ -755,9 +755,9 @@ def databaseBroadcastRead(message):
                             eventName='databaseData:'+dbURL;
     #                        print("eventName",eventName)
                             d={'dbURL': dbURL,'write_access':write_access,'data': data}
-                            socketio.emit(eventName,d,str(dbURL)+'rw',namespace='/pvServer')
+                            socketio.emit(eventName,d,room=str(dbURL)+'rw',namespace='/pvServer')
                             d={'dbURL': dbURL,'write_access':False,'data': data}
-                            socketio.emit(eventName,d,str(dbURL)+'ro',namespace='/pvServer')
+                            socketio.emit(eventName,d,room=str(dbURL)+'ro',namespace='/pvServer')
                             return 'OK'
                         except:
                             log.error("Could not connect to MongoDB: {}",dbURL)
@@ -910,7 +910,7 @@ def databaseBroadcastRead(message):
     #                        print("eventName",eventName)
 
                             d={'dbURL': dbURL,'write_access':write_access,'data': data}
-                            socketio.emit(eventName,d,request.sid,namespace='/pvServer')
+                            socketio.emit(eventName,d,room=str(request.sid),namespace='/pvServer')
 
 
 
@@ -1032,6 +1032,90 @@ def databaseUpdateOne(message):
                             newvalues=message['newvalues']
                             try:
                                 mydb[colName].update_one({'_id':ObjectId(str(id))},newvalues)
+
+                            except Exception as e:
+                                log.info(e)
+
+
+
+#                            print("done: "+dbURL)
+
+                            try:
+                                responseID=message['responseID']
+                            except:
+                                responseID="";
+
+                            #eventName='databaseUpdateOne';
+    #                        print("eventName",eventName)
+                            return 'OK'
+                        except:
+                            log.error("Could not connect to MongoDB: {}",dbURL)
+                            return "Ack: Could not connect to MongoDB: "+str(dbURL)
+
+                else:
+                    log.error("Malformed database URL, must be in format: mongodb://databaseID:database:collection")
+            else:
+                log.error("Unknown URL schema ({})",dbURL)
+        else:
+            log.warning("Write access denied to database URL: {}",dbURL)
+
+    else:
+        socketio.emit('redirectToLogIn',room=request.sid,namespace='/pvServer')
+
+@socketio.on('databaseDeleteOne', namespace='/pvServer')
+def databaseDeleteOne(message):
+    global clientPVlist,REACT_APP_DisableLogin
+    dbURL= str(message['dbURL'])
+
+#    print("databaseUpdate: SSID: ",request.sid,' dbURL: ', dbURL)
+#    print("message:",str(message))
+    authenticated=False
+    if REACT_APP_DisableLogin:
+        authenticated=True
+        accessControl={'userAuthorised':True,'permissions':{'read':True,'write':True}}
+    else :
+        accessControl=AutheriseUserAndPermissions(message['clientAuthorisation'],dbURL)
+        authenticated=accessControl['userAuthorised']
+
+    if accessControl['userAuthorised'] :
+        if accessControl['permissions']['write']:
+            if "mongodb://" in dbURL:
+
+#                print("mongodb database connection request: ",dbURL)
+                str1=dbURL.replace("mongodb://","")
+                strings=  str1.split(':')
+                if(len(strings)==3):
+                    database= strings[0];
+                    dbName=   strings[1];
+                    colName=  strings[2];
+#                    print("database: ", database, "length: ", len(database))
+#                    print("dbName: "  ,   dbName, "length: ", len(dbName))
+#                    print("colName: " ,  colName, "length: ", len(colName))
+                    ### must insert a better error detection here
+
+                    if ((len(database)>0) and (len(dbName)>0) and (len(colName)>0)):
+
+
+                        try:
+                            #print("connecting: "+dbURL)
+                            try:
+                                databaseString="mongodb://"+ str(os.environ[database])+"/"
+                                replicaSetName=str(os.environ[database+"_REPLICA_SET_NAME"])
+                                myclient = pymongo.MongoClient(databaseString,serverSelectionTimeoutMS=10,replicaSet=replicaSetName)
+                                # Wait for MongoClient to discover the whole replica set and identify MASTER!
+                                time.sleep(0.1)
+                                #myclient.server_info()
+                            except pymongo.errors.ServerSelectionTimeoutError as err:
+                                log.info(err)
+                                return "Ack: Could not connect to MongoDB: "+str(dbURL)
+
+                            mydb = myclient[dbName]
+
+                            mycol=mydb[colName]
+                            id=message['id']
+                            # newvalues=message['newvalues']
+                            try:
+                                mydb[colName].delete_one({'_id':ObjectId(str(id))})
 
                             except Exception as e:
                                 log.info(e)
@@ -1211,9 +1295,9 @@ def archiverRead(message):
                             eventName='archiverReadData:'+archiverURL;
 
                             d={'archiverURL': archiverURL,'write_access':write_access,'data': data}
-                            socketio.emit(eventName,d,str(archiverURL)+'rw',namespace='/pvServer')
+                            socketio.emit(eventName,d,room=str(archiverURL)+'rw',namespace='/pvServer')
                             d={'archiverURL': archiverURL,'write_access':False,'data': data}
-                            socketio.emit(eventName,d,str(archiverURL)+'ro',namespace='/pvServer')
+                            socketio.emit(eventName,d,room=str(archiverURL)+'ro',namespace='/pvServer')
                             return {'initialized':True}
                         except:
 
