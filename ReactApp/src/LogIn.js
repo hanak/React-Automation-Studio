@@ -104,10 +104,10 @@ const LoginAlert = (props) => {
       open={open}
       TransitionComponent={Transition}
       keepMounted
-      aria-labelledby="{`alert-Login-${id}`}"
+      aria-labelledby="{`alert-Login-title-${id}`}"
       aria-describedby="{`alert-Login-slide-description-${id}`}"
     >
-      <DialogTitle id="alert-Login-title1">
+      <DialogTitle id="{`alert-Login-title-${id}`}">
         Error!
       </DialogTitle>
       <DialogContent>
