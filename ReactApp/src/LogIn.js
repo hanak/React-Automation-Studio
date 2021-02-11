@@ -61,8 +61,67 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const LoginHeader = (prosp) => {
+  return (
+    <Box>
+      <Typography component="h1" variant="h3">
+        React
+      </Typography>
+      <Typography component="h1" variant="h3">
+        Automation
+      </Typography>
+      <Typography component="h1" variant="h3">
+        Studio
+      </Typography>
+      <Avatar className={classes.avatar}>
+        <LockOutlinedIcon />
+      </Avatar>
+      <Typography component="h1" variant="h5" style={{ paddingBottom: 16 }}>
+        Sign In
+      </Typography>
+    </Box>
+  );
+}
 
+const LoginFooter = (prosp) => {
+  return (
+    <Box>
+      <Typography style={{ paddingTop: 24 }} align="left" variant="caption">
+        Login is now customizable
+      </Typography>
+      <Typography style={{ paddingTop: 16 }} align="left" variant="caption">
+        V2.2.0
+      </Typography>
+    </Box>
+  );
+}
 
+const LoginAlert = (props) => {
+  const { id, open, message, onClose } = props;
+  return (
+    <Dialog
+      open={open}
+      TransitionComponent={Transition}
+      keepMounted
+      aria-labelledby="{`alert-Login-${id}`}"
+      aria-describedby="{`alert-Login-slide-description-${id}`}"
+    >
+      <DialogTitle id="alert-Login-title1">
+        Error!
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="{`alert-Login-slide-description-${id}`}">
+          {message}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={ onClose } color="primary">
+          Ok
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 const Login = (props) => {
   const classes = useStyles();
@@ -119,10 +178,8 @@ const Login = (props) => {
           : null
       if (endpoint) {
         axios.post(PyEpicsServerURL + endpoint, body, options)
-          // .then(response => response.json())
           .then(response => {
             const { data } = response;
-            console.log(data)
             if (mounted.current) {
 
               if (typeof data.jwt !== 'undefined') {
@@ -147,7 +204,6 @@ const Login = (props) => {
           }
           )
           .catch(err=>{
-            //setAuthenticationFailed(true);
             let str=err.toString();
             if (!(str.includes("401"))){
               console.log(str)
@@ -156,15 +212,12 @@ const Login = (props) => {
             else{
               setAuthorisationFailed(true);
             }
-            
-            
           })
       }
       setSubmit(false)
     }
     return () => mounted.current = false;
-  }, [submit]
-  )
+  }, [submit])
   useEffect(() => {
     const handleAuthorisation = (msg) => {
       context.setUserData(msg.username, msg.roles);
@@ -187,67 +240,19 @@ const Login = (props) => {
 
   return (
     <React.Fragment>
-      <Dialog
+      <LoginAlert
         open={authorisationFailed}
-        TransitionComponent={Transition}
-        keepMounted
-        aria-labelledby="alert-Login-title1"
-        aria-describedby="alert-Login-slide-description1"
-      >
-        <DialogTitle id="alert-Login-title1">
-          Error!
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-Login-slide-description1">
-            Invalid username or password!
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAuthorisationFailed(false)} color="primary">
-            Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
+        id="1"
+        message="Invalid username or password!"
+        onClose={() => setAuthorisationFailed(false)}/>
+      <LoginAlert
         open={authenticationFailed}
-        TransitionComponent={Transition}
-        keepMounted
-        aria-labelledby="alert-Login-title2"
-        aria-describedby="alert-Login-slide-description2"
-      >
-        <DialogTitle id="alert-Login-title2">
-          {"Error!"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-Login-slide-description2">
-            Authentication Failed!
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAuthenticationFailed(false)} color="primary">
-            Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
+        id="2"
+        message="Authentication Failed!"
+        onClose={() => setAuthenticationFailed(false)}/>
       <main className={classes.main}>
         <Paper className={classes.paper}>
-          {props.title1 && <Typography component="h1" variant="h3">
-            {props.title1}
-          </Typography>}
-          {props.title2 && <Typography component="h1" variant="h3">
-            {props.title2}
-          </Typography>}
-          {props.title3 && <Typography component="h1" variant="h3">
-            {props.title3}
-          </Typography>}
-          {props.logoIcon && <Avatar className={classes.avatar}>
-            {props.logoIcon}
 
-          </Avatar>}
-          {props.signInText &&
-            <Typography component="h1" variant="h5" style={{ paddingBottom: 16 }}>
-              {props.signInText}
-            </Typography>}
           {(loginModes.length > 1) && <AppBar position="static" color='inherit' >
             <Tabs value={loginTabValue} onChange={(event, newValue) => setLoginTabValue(newValue)} aria-label="simple tabs example"
               indicatorColor="primary"
@@ -327,41 +332,23 @@ const Login = (props) => {
   );
 }
 Login.propTypes = {
-  /** Title text top row.*/
-  title1: PropTypes.string,
-  /** Title text middle row.*/
-  title2: PropTypes.string,
-  /** Title text bottom row.*/
-  title3: PropTypes.string,
-  /** Sign in text.*/
-  signInText: PropTypes.string,
-  /** Footer.*/
-  footer: PropTypes.string,
-  /** Version.*/
-  version: PropTypes.string,
+  /** Header of the prompt. Use a block component (e.g. Box). */
+  header: PropTypes.element,
+  /** Footer of the prompt. Use a block component (e.g. Box). */
+  footer: PropTypes.element,
   /** Standard Login Username display string.*/
   standardLoginUsernameDisplayText: PropTypes.string,
   /** Active Directory Login Username display string.*/
   activeDirectoryLoginUsernameDisplayText: PropTypes.string,
-  /** Login timeout.*/
+  /** Login timeout in miliseconds. */
   timeout: PropTypes.number,
-  /** Login Icon. Must be of type @material-ui/icons/...*/
-  logoIcon: PropTypes.element,
-
-
 };
 Login.defaultProps = {
-  title1: "React",
-  title2: "Automation",
-  title3: "Studio",
-  signInText: "Sign In",
-  footer: "Login is now customizable",
-  version: "V2.2.0",
+  header: <LoginHeader />,
+  footer: <LoginFooter />,
   standardLoginUsernameDisplayText: "Username",
   activeDirectoryLoginUsernameDisplayText: "Email Address",
-  logoIcon: <LockOutlinedIcon />,
   timeout: 15000,
-
 };
 
 
