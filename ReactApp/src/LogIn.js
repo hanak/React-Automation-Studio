@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const LoginHeader = (prosp) => {
+  const classes = useStyles();
   return (
     <Box>
       <Typography component="h1" variant="h3">
@@ -252,7 +253,7 @@ const Login = (props) => {
         onClose={() => setAuthenticationFailed(false)}/>
       <main className={classes.main}>
         <Paper className={classes.paper}>
-
+          {props.header}
           {(loginModes.length > 1) && <AppBar position="static" color='inherit' >
             <Tabs value={loginTabValue} onChange={(event, newValue) => setLoginTabValue(newValue)} aria-label="simple tabs example"
               indicatorColor="primary"
@@ -316,15 +317,7 @@ const Login = (props) => {
               Sign in
             </Button>
           </form>}
-
-          {props.footer && <Typography style={{ paddingTop: 24 }} align="left" variant="caption">
-            {props.footer}
-          </Typography>}
-
-          {props.version && <Typography style={{ paddingTop: 16 }} align="left" variant="caption">
-            {props.version}
-
-          </Typography>}
+          {props.footer}
         </Paper>
       </main>
       {authorised && <Redirect to='/' />}
