@@ -6,7 +6,9 @@ import eslint from 'vite-plugin-eslint'
 export default defineConfig({
   plugins: [
     react(),
-    eslint()
+    eslint({
+      exclude: ['/virtual:/**', 'node_modules/**']      
+    })
   ],
   server: {
     port: 3000,

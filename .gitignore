@@ -4,6 +4,7 @@
 /frontendServer/node_modules
 /styleguideServer/node_modules
 /ReactApp/node_modules
+/ReactApp/storybook-static
 /node_modules
 /.pnp
 .pnp.js
