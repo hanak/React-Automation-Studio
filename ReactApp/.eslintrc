@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "react-app",
+    "plugin:storybook/recommended"
+  ],
+  "ignorePatterns": [
+    "/virtual:/**",
+    "node_modules/**"
+  ]
+}

@@ -3,7 +3,8 @@ ADD ./ReactApp/public /ReactApp/public
 ADD  ./.env /ReactApp/
 ADD ./ReactApp/src /ReactApp/src
 ADD ./ReactApp/vite.config.js /ReactApp/vite.config.js
-ADD /ReactApp/.storybook /ReactApp/.storybook
+ADD ./ReactApp/.storybook /ReactApp/.storybook
+ADD ./ReactApp/.eslintrc /ReactApp/.storybook/.eslintrc
 COPY ./ReactApp/img /ReactApp/img
 RUN npm run build-storybook
 ADD ./ReactApp/img /ReactApp/storybook-static/img
