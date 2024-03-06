@@ -4,7 +4,7 @@ ADD  ./.env /ReactApp/
 ADD ./ReactApp/src /ReactApp/src
 ADD ./ReactApp/vite.config.js /ReactApp/vite.config.js
 ADD ./ReactApp/.storybook /ReactApp/.storybook
-ADD ./ReactApp/.eslintrc /ReactApp/.storybook/.eslintrc
+ADD ./ReactApp/.eslintrc /ReactApp/.eslintrc
 COPY ./ReactApp/img /ReactApp/img
 RUN npm run build-storybook
 ADD ./ReactApp/img /ReactApp/storybook-static/img
