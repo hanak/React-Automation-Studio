@@ -21,7 +21,6 @@ import SmsOutlinedIcon from "@mui/icons-material/SmsOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import SignalIcon from "./SignalIcon";
 
-import DateFnsUtils from "@date-io/date-fns";
 import {
   formatISO,
   isSameDay,

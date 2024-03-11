@@ -1,7 +1,6 @@
 import React from "react";
 
 import Widget from "../SystemComponents/Widgets/Widget";
-import withStyles from "@mui/styles/withStyles";
 import {
   svgHeight,
   svgCenterY,

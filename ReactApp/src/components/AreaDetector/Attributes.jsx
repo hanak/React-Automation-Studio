@@ -6,12 +6,10 @@ import TableBody from "@mui/material/TableBody";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
-import { useTheme } from "@mui/system";
 import { StyledTableCell } from "./TableStyles";
 
 const Attributes = (props) => {
   const muiTextFieldProps = { size: "small", variant: "standard" };
-  const theme = useTheme();
   return (
     <Table size="small">
       <TableHead>

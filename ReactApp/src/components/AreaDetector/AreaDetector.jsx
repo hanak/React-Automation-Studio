@@ -7,7 +7,6 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import { useTheme } from "@mui/system";
-import GraphHeatmap from "./GraphHeatmap";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -35,7 +34,6 @@ import PluginsMore from "./PluginsMore";
 const AreaDetector = (props) => {
   const [tabVal, setTabVal] = useState(0);
   const [morePluginsR, setMorePluginsR] = useState(null);
-  const muiTextFieldProps = { size: "small", variant: "standard" };
   const theme = useTheme();
   const paperElevation = theme.palette.paperElevation;
   return (

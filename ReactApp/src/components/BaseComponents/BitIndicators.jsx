@@ -1,5 +1,4 @@
 import React from "react";
-import withStyles from "@mui/styles/withStyles";
 import { Grid, FormControlLabel, SvgIcon, useTheme } from "@mui/material";
 import { Lens } from "@mui/icons-material";
 import PropTypes from "prop-types";

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import TextOutput from "../BaseComponents/TextOutput";
 import TextInput from "../BaseComponents/TextInput";
@@ -12,7 +12,6 @@ import SelectionInput from "../BaseComponents/SelectionInput";
 import ActionButton from "../BaseComponents/ActionButton";
 
 import Stack from "@mui/system/Stack";
-import { useTheme } from "@mui/system";
 import { StyledTableCell } from "./TableStyles";
 import { Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
@@ -20,8 +19,6 @@ import CloseIcon from "@mui/icons-material/Close";
 
 const PluginsMore = (props) => {
   const muiTextFieldProps = { size: "small", variant: "standard" };
-  const theme = useTheme();
-  const paperElevation = theme.palette.paperElevation;
   return (
     <Table size="small">
       <TableHead>

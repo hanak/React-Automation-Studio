@@ -23,7 +23,6 @@ function getTickValues(
   xOffset,
   radialTextOffset
 ) {
-  const { classes } = props;
   let ticks = [];
   let i = 0;
   for (i = 0; i < numberOfTicks; i++) {
@@ -59,7 +58,6 @@ function getTickValues(
 function GaugeComponent(props) {
   const theme = useTheme();
   const gradientId = uuidv4();
-  const { classes } = props;
   const units = props.units;
   const value = props.value;
   const min = props.min;

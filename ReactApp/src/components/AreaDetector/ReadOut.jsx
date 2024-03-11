@@ -7,7 +7,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import SelectionInput from "../BaseComponents/SelectionInput";
-import { useTheme } from "@mui/system";
 import { StyledTableCell } from "./TableStyles";
 
 const ReadOut = (props) => {

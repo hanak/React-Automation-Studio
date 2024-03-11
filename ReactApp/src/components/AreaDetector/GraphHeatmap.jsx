@@ -5,7 +5,6 @@ import ContextMenu from "../SystemComponents/ContextMenu";
 import PV from "../SystemComponents/PV";
 import Plot from "react-plotly.js";
 import { isMobileOnly } from "react-device-detect";
-import { replaceMacros } from "../SystemComponents/Utils/macroReplacement";
 const PlotData = (props) => {
   const theme = useTheme();
   const updateDataReducer = (pvs, newData) => {

@@ -1,6 +1,5 @@
 import React from "react";
 
-import AutomationStudioContext from "../SystemComponents/AutomationStudioContext";
 import TextInput from "../BaseComponents/TextInput";
 import TextOutput from "../BaseComponents/TextOutput";
 import Slider from "../BaseComponents/Slider";
@@ -8,12 +7,9 @@ import Grid from "@mui/material/Grid";
 import GraphY from "../BaseComponents/GraphY";
 import TextField from "@mui/material/TextField";
 import { useLocation } from "react-router-dom";
-import { useTheme } from "@mui/material/styles";
 
 const Probe = () => {
-  const context = React.useContext(AutomationStudioContext);
   const location = useLocation();
-  const theme = useTheme();
   const probeObject = JSON.parse(decodeURIComponent(location.search.substr(1)));
   let probetype;
 
@@ -257,19 +253,7 @@ const Probe = () => {
                       disabled
                       margin="none"
                       variant="outlined"
-                      InputLabelProps={{
-                        classes: {
-                          root: classes.cssLabel,
-                          focused: classes.cssFocused,
-                        },
-                      }}
                       InputProps={{
-                        classes: {
-                          root: classes.cssOutlinedInput,
-                          focused: classes.cssFocused,
-                          input: classes.input,
-                          notchedOutline: classes.notchedOutline,
-                        },
                         readOnly: true,
                       }}
                     />

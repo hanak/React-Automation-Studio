@@ -13,4 +13,4 @@ const nonNegativeInteger = (props, propName, componentName) => {
   }
 };
 
-export default { nonNegativeInteger };
+export default nonNegativeInteger;

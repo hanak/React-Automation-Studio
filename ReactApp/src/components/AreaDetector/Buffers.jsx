@@ -8,12 +8,10 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import SelectionInput from "../BaseComponents/SelectionInput";
 import ActionButton from "../BaseComponents/ActionButton";
-import { useTheme } from "@mui/system";
 import { StyledTableCell } from "./TableStyles";
 
 const Buffers = (props) => {
   const muiTextFieldProps = { size: "small", variant: "standard" };
-  const theme = useTheme();
   return (
     <Table size="small">
       <TableHead>

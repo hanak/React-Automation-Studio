@@ -3,7 +3,6 @@ import React, { useState, useContext } from "react";
 import PropTypes from "prop-types";
 
 import { useTheme } from "@mui/material/styles";
-import makeStyles from "@mui/styles/makeStyles";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";

@@ -6,7 +6,6 @@ import { useLocation, Navigate } from "react-router-dom";
 
 const ProtectedRoute = (props) => {
   const location = useLocation();
-  const Component = props.component;
   const context = useContext(AutomationStudioContext);
   const loggingIn = context.userData.loggingIn;
   const loggedIn =

@@ -36,7 +36,6 @@ function getTickValues(
   yOffset,
   value
 ) {
-  const { classes } = props;
   let ticks = [];
   let i = 0;
   if (typeof props.disabled === "undefined") {
@@ -290,7 +289,6 @@ const ProgressBarInternalComponent = (props) => {
   ]);
 
   const { initialized } = props;
-  const { classes } = props;
   let units;
   let value;
   let min;
