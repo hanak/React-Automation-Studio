@@ -19,6 +19,7 @@ services:
       - ./ReactApp/src:/ReactApp/src
       - ./ReactApp/index.html:/ReactApp/index.html
       - ./ReactApp/vite.config.js:/ReactApp/vite.config.js
+      - ./ReactApp/.eslintrc.json:/ReactApp/.eslintrc.json
       - ./ReactApp/public:/ReactApp/public
     restart: always
     ports:
