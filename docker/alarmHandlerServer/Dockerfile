@@ -8,7 +8,9 @@ RUN apt-get update && \
 WORKDIR /usr/src/app
 
 COPY alarmHandlerServer/src/python/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv venv
+ENV PATH="/usr/src/app/venv/bin:$PATH"
+RUN uv pip install  -r requirements.txt
 
 # Set pyepics required environment variables
 ENV PYEPICS_LIBCA=/epics/base/lib/linux-x86_64/libca.so
@@ -31,4 +33,4 @@ COPY alarmHandlerServer/src/python/ ./
 # custom EPICS_CA_ADDR_LIST to only allow dev stuff to communicate
 ENV EPICS_CA_ADDR_LIST="0.0.0.0:8001 0.0.0.0:8004 0.0.0.0:8005"
 
-CMD ["python","main.py"]
+CMD ["uv","run","main.py"]
