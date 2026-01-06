@@ -1,13 +1,26 @@
+ARG BASE_IMAGE=ubuntu:24.04
 
-FROM python:3.12.7 as epicsbase
+FROM ${BASE_IMAGE} AS epicsbase
+
+RUN apt-get update && apt-get install -y wget autoconf libtool check patch build-essential libreadline-dev re2c libxml2-dev tmux software-properties-common curl
+
+# Download the latest installer
+ADD https://astral.sh/uv/install.sh /uv-installer.sh
+
+# Run the installer then remove it
+RUN sh /uv-installer.sh && rm /uv-installer.sh
+RUN install -Dm755 /root/.local/bin/uv /usr/local/bin/uv
+# Ensure the installed binary is on the `PATH`
+ENV PATH="/usr/local/bin/uv:$PATH"
+
+
 ENV EPICS_BASE=/epics/base/
 WORKDIR /epics
 
-RUN apt-get update && apt-get install -y wget autoconf libtool check patch build-essential libreadline-dev re2c libxml2-dev tmux software-properties-common 
-
-RUN wget https://epics-controls.org/download/base/base-7.0.8.tar.gz
-RUN tar -xvf base-7.0.8.tar.gz
-RUN ln -s /epics/base-7.0.8 /epics/base
+RUN wget https://epics-controls.org/download/base/base-7.0.9.tar.gz
+RUN tar -xvf base-7.0.9.tar.gz
+RUN ln -s /epics/base-7.0.9 /epics/base
 WORKDIR /epics/base
 RUN make -j 4
+
 WORKDIR /epics
