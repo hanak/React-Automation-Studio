@@ -1,15 +1,12 @@
-FROM python:3.12.7
+FROM epicsbase 
 
-
-ADD ./adminDbInit adminDbInit
+ADD ./adminDbInit /adminDbInit
 WORKDIR /adminDbInit
+ENV UV_LINK_MODE=copy
 
-RUN pip install -r requirements.txt
+RUN --mount=type=cache,target=/usr/local/uv/.cache/uv \
+    uv sync
 
-
-
-ENTRYPOINT ["python"]
-
-CMD ["-u","initDB.py"]
+CMD ["uv", "run", "initDB.py"]
 
 EXPOSE 27017
