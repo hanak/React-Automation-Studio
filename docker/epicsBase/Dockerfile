@@ -12,7 +12,10 @@ RUN sh /uv-installer.sh && rm /uv-installer.sh
 RUN install -Dm755 /root/.local/bin/uv /usr/local/bin/uv
 # Ensure the installed binary is on the `PATH`
 ENV PATH="/usr/local/bin/uv:$PATH"
+ENV UV_PYTHON_CACHE_DIR=/usr/local/uv/.cache/uv/python
 
+RUN --mount=type=cache,target=/usr/local/uv/.cache/uv \
+    uv python install 3.12.7
 
 ENV EPICS_BASE=/epics/base/
 WORKDIR /epics
@@ -21,6 +24,6 @@ RUN wget https://epics-controls.org/download/base/base-7.0.9.tar.gz
 RUN tar -xvf base-7.0.9.tar.gz
 RUN ln -s /epics/base-7.0.9 /epics/base
 WORKDIR /epics/base
-RUN make -j 4
+RUN make -j ${no_jobs-4}
 
 WORKDIR /epics
