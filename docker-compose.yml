@@ -13,6 +13,8 @@ services:
     build:
       context: ./
       dockerfile: docker/frontend/Dockerfile
+      additional_contexts:
+         node_cache: "service:node_cache"
       network: host
     volumes:
       - ./build/frontend:/build
@@ -24,6 +26,8 @@ services:
     build:
       context: ./
       dockerfile: docker/pvserver/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     restart: always
     network_mode: host
     tty: true
@@ -51,6 +55,8 @@ services:
     build:
       context: ./
       dockerfile: docker/pvserver/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     restart: always
     network_mode: host
     tty: true
@@ -79,6 +85,8 @@ services:
     build:
       context: ./
       dockerfile: docker/pvserver/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     restart: always
     network_mode: host
     tty: true
@@ -130,6 +138,8 @@ services:
       context: ./
 
       dockerfile: docker/pvserver/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     restart: always
     network_mode: host
     env_file: .env
@@ -154,6 +164,8 @@ services:
     build:
       context: ./
       dockerfile: docker/demoioc/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     tty: true
     stdin_open: true
     restart: always
@@ -165,6 +177,8 @@ services:
     build:
       context: ./
       dockerfile: docker/storybook/Dockerfile
+      additional_contexts:
+         node_cache: "service:node_cache"
     env_file: .env
     environment:
       - pvServerPort=5001
@@ -203,6 +217,8 @@ services:
     build:
       context: ./
       dockerfile: docker/alarmHandlerServer/Dockerfile
+      additional_contexts:
+          epicsbase: "service:epicsbase"
     hostname: alarmhandlerserver
     restart: always
     depends_on:
