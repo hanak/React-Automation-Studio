@@ -320,13 +320,16 @@ services:
       - ADMIN_DATABASE_REPLICA_SET_NAME=devrs
     build:
       context: ./
-
       dockerfile: docker/adminDbInit/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     network_mode: "host"
     tty: true
     stdin_open: true
     depends_on:
       - mongosetup
+      - epicsbase
+      
   areadetectorsim:
     image: prjemian/synapps
     ports:
