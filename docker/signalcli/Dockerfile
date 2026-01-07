@@ -41,4 +41,4 @@ COPY ./signalcli/signal_cli_rest_api/ signal_cli_rest_api/
 RUN mkdir -p $HOME/.local/share/signal-cli
 
 
-CMD python ./signal_cli_rest_api/main.py
+CMD ["python", "./signal_cli_rest_api/main.py"]
