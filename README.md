@@ -145,7 +145,9 @@ It is advised to only use the containerized version with a Linux environment. (S
 
 Prerequisites: git, latest version of docker-ce and docker compose
 
-( At the time of writing the system used Docker V25.0.2 and docker compose V2.24.5 )
+(At the time of writing the system used Docker V28.1.1)
+
+V8.0.0 includes updates to the docker compose orchestration. See the migration guide for more info.
 
 To install docker-ce on Unbuntu follow:
 
