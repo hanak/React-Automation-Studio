@@ -7,10 +7,8 @@ RUN apt-get update && \
 # Install python dependencies
 WORKDIR /usr/src/app
 
-COPY alarmHandlerServer/src/python/requirements.txt ./
-RUN uv venv
-ENV PATH="/usr/src/app/venv/bin:$PATH"
-RUN uv pip install  -r requirements.txt
+COPY alarmHandlerServer/src/python/pyproject.toml ./
+RUN uv sync
 
 # Set pyepics required environment variables
 ENV PYEPICS_LIBCA=/epics/base/lib/linux-x86_64/libca.so

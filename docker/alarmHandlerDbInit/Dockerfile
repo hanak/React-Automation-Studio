@@ -1,8 +1,11 @@
-FROM python:3.12.7
+FROM epicsbase
 
-ADD ./alarmHandlerDbInit alarmHandlerDbInit
+ADD ./alarmHandlerDbInit /alarmHandlerDbInit
 WORKDIR /alarmHandlerDbInit
 
-RUN pip install -r requirements.txt
+ENV UV_LINK_MODE=copy
 
-CMD ["python","main.py"]
+RUN --mount=type=cache,target=/usr/local/uv/.cache/uv \
+    uv sync
+
+CMD ["uv","run","main.py"]
