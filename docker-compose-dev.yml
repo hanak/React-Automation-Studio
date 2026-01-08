@@ -14,6 +14,8 @@ services:
     build:
       context: ./
       dockerfile: docker/frontendserverDev/Dockerfile
+      additional_contexts:
+        node_cache: "service:node_cache"
     volumes:
       - ./ReactApp/package.json:/ReactApp/package.json
       - ./ReactApp/src:/ReactApp/src
@@ -30,6 +32,8 @@ services:
     build:
       context: ./
       dockerfile: docker/pvserver/Dockerfile
+      additional_contexts:
+        epicsbase: "service:epicsbase"
     restart: always
     network_mode: host
     tty: true
@@ -76,6 +80,8 @@ services:
       context: ./
 
       dockerfile: docker/pvserver/Dockerfile
+      additional_contexts:
+        epicsbase: "service:epicsbase"
     restart: always
     network_mode: host
     env_file: .env
@@ -102,6 +108,8 @@ services:
       context: ./
 
       dockerfile: docker/demoioc/Dockerfile
+      additional_contexts:
+        epicsbase: "service:epicsbase"
     tty: true
     stdin_open: true
     restart: always
@@ -112,6 +120,8 @@ services:
     build:
       context: ./
       dockerfile: docker/storybook/Dockerfile
+      additional_contexts:
+        node_cache: "service:node_cache"
     env_file: .env
     environment:
             - pvServerPort=5001
@@ -140,10 +150,13 @@ services:
     build:
       context: ./
       dockerfile: docker/alarmHandlerDbInit/Dockerfile
+      additional_contexts:
+        epicsbase: "service:epicsbase"
     hostname: initializealarmhandlerdb
     restart: on-failure
     network_mode: "host"
     depends_on:
+      - epicsbase
       - mongosetup
     stdin_open: true
     tty: true
@@ -153,6 +166,8 @@ services:
     build:
       context: ./
       dockerfile: docker/alarmHandlerServer/Dockerfile
+      additional_contexts:
+        epicsbase: "service:epicsbase"
     hostname: alarmhandlerserver
     restart: always
     depends_on:
