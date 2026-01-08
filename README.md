@@ -1,4 +1,6 @@
-Current Release: V7.0.0
+Current Release: V8.0.0
+
+[Migrate from-V7.x.x to V8.x.x](docs/migrate-from-V7-to-V8.md)
 
 [Migrate from-V6.x.x to V7.x.x](docs/migrate-from-V6-to-V7.md)
 
@@ -578,6 +580,21 @@ or: https://doi.org/10.18429/JACoW-ICALEPCS2023-FR2BCO01
 
 
 # Changelog
+
+ V8.0.0 Thursday 8 January 2026
+  <br />
+  Major Updates:
+  <ul>     
+    <li>Updated to the latest Node LTS 24.12.0 </li>
+    <li>Switched to UV Python package management</li>
+    <li>Updated to Python 3.13.11</li>
+    <li>Updated to PyEpics 3.5.9</li>
+    <li>Updated to MongoDb 8.2.3</li>
+    <li>Updated docker compose organisation</li>
+    <li>Package updates to frontend modules</li>
+    <li>Package updates to backend modules</li>
+  </ul>
+
  V7.0.0 Tuesday 16 September 2025
   <br />
   Major Updates:
