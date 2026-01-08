@@ -204,10 +204,13 @@ services:
     build:
       context: ./
       dockerfile: docker/alarmHandlerDbInit/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     hostname: initializealarmhandlerdb
     restart: on-failure
     network_mode: "host"
     depends_on:
+      - epicsbase
       - mongosetup
     stdin_open: true
     tty: true
@@ -289,13 +292,17 @@ services:
     build:
       context: ./
       dockerfile: docker/mongoSetup/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     hostname: mongosetup
     restart: on-failure
     network_mode: "host"
     depends_on:
+      - epicsbase
       - mongo1
       - mongo2
       - mongo3
+
     stdin_open: true
     tty: true
     env_file: .env
@@ -308,10 +315,13 @@ services:
     build:
       context: ./
       dockerfile: docker/loadSaveDbInit/Dockerfile
+      additional_contexts:
+         epicsbase: "service:epicsbase"
     network_mode: "host"
     tty: true
     stdin_open: true
     depends_on:
+      - epicsbase
       - mongosetup
   initializeadmindb:
     env_file: .env
