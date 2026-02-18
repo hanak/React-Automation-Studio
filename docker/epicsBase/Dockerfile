@@ -12,9 +12,9 @@ RUN sh /uv-installer.sh && rm /uv-installer.sh
 RUN install -Dm755 /root/.local/bin/uv /usr/local/bin/uv
 # Ensure the installed binary is on the `PATH`
 ENV PATH="/usr/local/bin/uv:$PATH"
-ENV UV_PYTHON_CACHE_DIR=/usr/local/uv/.cache/uv/python
+ENV UV_PYTHON_CACHE_DIR=/opt/uv-cache/uv/python
 
-RUN --mount=type=cache,target=/usr/local/uv/.cache/uv \
+RUN --mount=type=cache,target=/opt/uv-cache/uv \
     uv python install 3.12.7
 
 ENV EPICS_BASE=/epics/base/

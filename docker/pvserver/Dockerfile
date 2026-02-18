@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y  \
 
 ADD ./pvServer /pvServer
 WORKDIR /pvServer
-RUN --mount=type=cache,target=/usr/local/uv/.cache/uv  \
+RUN --mount=type=cache,target=/opt/uv-cache/uv  \
     uv sync
 
 ENV pvServerURL=http://127.0.0.1
