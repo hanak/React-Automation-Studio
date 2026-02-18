@@ -21,6 +21,7 @@ dependencies = [
     "python-dotenv==1.2.1",
     "python-ldap==3.4.5",
     "numpy==2.4.0",
+    "setuptools==80.10.2"
 ]
 
 [project.urls]
