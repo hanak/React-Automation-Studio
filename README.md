@@ -1,16 +1,65 @@
 Current Release: V8.0.0
 
-[Migrate from-V7.x.x to V8.x.x](docs/migrate-from-V7-to-V8.md)
+**Migration Guides:**
+- [Migrate from V7.x.x to V8.x.x](docs/migrate-from-V7-to-V8.md)
+- [Migrate from V6.x.x to V7.x.x](docs/migrate-from-V6-to-V7.md)
+- [Migrate from V5.x.x to V6.x.x](docs/migrate-from-V5-to-V6.md)
+- [Migrate from V4.0.3 to V5.2.X](docs/migrate-from-V4-to-V5.md)
 
-[Migrate from-V6.x.x to V7.x.x](docs/migrate-from-V6-to-V7.md)
+## ⚠️ V8.0.0 Breaking Changes Summary
 
-[Migrate from-V5.x.x to V6.x.x](docs/migrate-from-V5-to-V6.md)
+**If you use the standard RAS containers with the latest Docker, no action is required.**
 
-[Migrate from V4.0.3 to V5.2.X](docs/migrate-from-V4-to-V5.md)
+### Important Requirements
+
+| Item | Requirement | Impact |
+|------|-------------|--------|
+| **Docker Version** | 28.1.1+ | Required - New Docker Compose features |
+| **Docker Compose** | Latest version | Required - Bake feature support |
+| **Python Package Manager** | UV (automatic) | Internal change - transparent to users |
+| **Base OS** | Ubuntu 24.04 LTS | Backend containers only |
+
+### Key Changes
+
+1. **Python Package Management → UV**
+   - Unified local cache shared across all containers
+   - Faster builds and consistent dependencies
+   - **Action needed:** Only if you have custom Python backend containers
+
+2. **EPICS Base Image Foundation**
+   - `epicsbase` is now the foundational layer for all backend containers
+   - Includes: EPICS, Python, and shared dependencies
+   - **Action needed:** Update custom compose files to reference epicsbase
+
+3. **Custom Docker Compose Configurations**
+   - If you maintain custom `docker-compose.yml` files, add to backend services:
+   ```yaml
+   build:
+     additional_contexts:
+       epicsbase: "service:epicsbase"
+   depends_on:
+     - epicsbase
+   ```
+
+4. **Optional Performance Boost**
+   - Enable Docker Compose Bake for 2-3x faster multi-container builds
+   - Edit `$HOME/.docker/config.json`:
+   ```json
+   {
+     "plugins": {
+       "compose": {
+         "build": "bake"
+       }
+     }
+   }
+   ```
+   - Reference: https://docs.docker.com/compose/how-tos/dependent-images/
+
+**For detailed migration steps, see [Migrate from V7.x.x to V8.x.x](docs/migrate-from-V7-to-V8.md)**
 
 # Introduction
 
-React Automation Studio is a new software platform to enable the control of large scientific equipment through EPICS.
+React Automation Studio is a software platform to enable the control of large scientific equipment through EPICS.
 
 The system has been containerized with Docker and version controlled as a mono-repository using Git.
 
@@ -119,7 +168,7 @@ React hooks are available that setup a watch, perform an update or an insert to 
 
 See the documentation in the style guide.
 
-Currently the Alarm Handler component  and LoadSave component make use of the MongoDB database.
+Currently, the Alarm Handler component and LoadSave component make use of the MongoDB database.
 
 *6. AlarmHandler*
 
@@ -149,12 +198,10 @@ Prerequisites: git, latest version of docker-ce and docker compose
 
 V8.0.0 includes updates to the docker compose orchestration. See the migration guide for more info.
 
-To install docker-ce on Unbuntu follow:
-
+To install Docker CE on Ubuntu, follow:
 https://docs.docker.com/engine/install/ubuntu/
 
-It is advised to the follow the Post Installation steps for Linux:
-
+For post-installation setup on Linux:
 https://docs.docker.com/engine/install/linux-postinstall/
 
 
@@ -166,9 +213,9 @@ https://docs.docker.com/engine/install/linux-postinstall/
 
 ```bash
 git clone https://github.com/React-Automation-Studio/React-Automation-Studio.git
-
 ```
-or
+
+Or using SSH:
 
 ```bash
 git clone git@github.com:React-Automation-Studio/React-Automation-Studio.git
@@ -178,68 +225,105 @@ Then in React Automation Studio installation folder run:
 ```bash
 touch .env
 ```
-# 2 Launching the Docker compose files
-The systems uses Docker to create isolated production and development environments. There are several docker-compose configuration files.
+# 2 Launching the Docker Compose Files
 
+The system uses Docker to create isolated production and development environments. Several docker-compose configuration files are available for different use cases.
 
+### Production Environment
+
+Launch the compiled production version with demo IOCs and styleguide:
 ```bash
-docker compose  up
+docker compose up
 ```
-or
+
+Or explicitly:
 ```bash
 docker compose -f docker-compose.yml up
 ```
-Will launch the compiled production version with the demoIOC's and styleguide
 
+This will serve the app at http://127.0.0.1:5000 and the styleguide at http://127.0.0.1:6060.
 
+### Development Environment
 
+Launch the development version with live reload for React and styleguide:
 ```bash
 docker compose -f docker-compose-dev.yml up
 ```
-Will launch the development version with the demoIOC's and styleguide.
 
+This will launch the pvServer, demo IOC, styleguide, and React development environment with hot reload enabled. The app will be served at http://127.0.0.1:3000 and styleguide at http://127.0.0.1:6060.
 
+### Styleguide Development Only
 
-
-And:
-
+To work on the styleguide in isolation:
 ```bash
 docker compose -f docker-compose-dev-styleguide-dev.yml up
 ```
-Will launch the development version of the styleguide.
 
-**Note**: Any of the above containers can be rebuilt by add **--build** at the end of the command.
+### Building and Rebuilding
 
-
-
-
-
-
-**Initially to check that everything is working only bring up the production version by running**
-
+Add `--build` flag to any command to rebuild images:
 ```bash
-docker compose  up --build
+docker compose up --build
 ```
 
-This installation process of all the docker images may take a while  the first time. There after it is fast as all the repeated build and up commands uses cached installations. The longest process is the installation of the node modules. Do not be deterred by the red warnings.
+> **Tip:** First run may take several minutes as Docker pulls and builds all images. Subsequent runs use cached layers and are much faster. Do not be alarmed by red build warnings—they are usually harmless.
 
-This default installation will serve the  app at http://127.0.0.1:5000 and the style guide at http://127.0.0.1:6060.
+### Performance Optimization - Docker Compose Bake
 
+For significantly faster builds (2-3x speedup) on systems with multiple backend services, enable Docker Compose Bake:
 
-To launch the development environment make sure the production version is stopped,and the run :
+1. Edit `$HOME/.docker/config.json`:
+```json
+{
+  "plugins": {
+    "compose": {
+      "build": "bake"
+    }
+  }
+}
+```
+
+2. Restart Docker daemon
+3. Builds will now use buildx for parallel compilation
+
+Reference: https://docs.docker.com/compose/how-tos/dependent-images/
+
+### Custom Docker Compose Files
+
+If you maintain custom `docker-compose.yml` files for your backend containers, ensure they reference the updated epicsbase container:
+
+```yaml
+your_service:
+  build:
+    context: ./docker/your_service
+    additional_contexts:
+      epicsbase: "service:epicsbase"
+  depends_on:
+    - epicsbase
+```
+
+### Development Workflow
+
+When developing the React application:
+
+1. Run the development environment:
 ```bash
 docker compose -f docker-compose-dev.yml up
 ```
-This will launch the pvServer, demo IOC ,style guide and the React Development environment. As with the production version the first run may take awhile. There after it is fast as all the repeated build and up commands uses cached installations.
 
-The react development environment app will be served on http://127.0.0.1:3000 and the styleguide at http://127.0.0.1:6060.
+2. Edit source files in your favorite editor (VS Code, Atom, etc.)
+3. The React development environment automatically recompiles and refreshes the browser
+4. Focus work in the `/src/components/staging/` directory
 
-The source can then be edited using your favorite editor like Atom, when the file is saved the project automatically re-compiles and the web page is refreshed. It is recommended to only work in the
-/src/components/staging/ folders.
+> **Note:** Always stop the production environment before launching the development environment to avoid port conflicts.
 
-Bug fixes and contributions can be submitted via pull requests.
+### First-Time Setup
 
-To change the URL, ports, and enable user authentication See section 6.1 and 6.2
+Initial builds may several minutes as Docker downloads and builds all images. Subsequent runs use cached layers and start much faster. The longest step is typically the Node.js module installation.
+
+### Submitting Changes
+
+Bug fixes and feature contributions can be submitted via pull requests on GitHub.
 
 
 
@@ -583,7 +667,7 @@ or: https://doi.org/10.18429/JACoW-ICALEPCS2023-FR2BCO01
 
 # Changelog
 
- V8.0.0 Thursday 8 January 2026
+ V8.0.0 Wednesday 18 February 2026
   <br />
   Major Updates:
   <ul>     
