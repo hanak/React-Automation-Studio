@@ -671,7 +671,7 @@ or: https://doi.org/10.18429/JACoW-ICALEPCS2023-FR2BCO01
   <br />
   Major Updates:
   <ul>     
-    <li>Updated to the latest Node LTS 24.12.0 </li>
+    <li>Updated to the latest Node LTS 24.13.1 </li>
     <li>Switched to UV Python package management</li>
     <li>Updated to Python 3.13.11</li>
     <li>Updated to PyEpics 3.5.9</li>
