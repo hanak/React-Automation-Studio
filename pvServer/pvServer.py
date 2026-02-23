@@ -22,7 +22,6 @@ from urllib import parse, request as urlrequest
 from werkzeug.routing import BaseConverter
 import numpy as np
 
-
 sys.path.insert(0, "../")
 sys.path.insert(0, "userAuthentication/")
 
