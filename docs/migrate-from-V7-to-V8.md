@@ -28,11 +28,11 @@ The EPICS base image has been updated to **Ubuntu 24.04 LTS**.
 
 **What this means for you:** If you extend or customize the epicsbase container, verify your custom packages and configurations are compatible with Ubuntu 24.04.
 
-### 3. Updated Container Architecture - EPICSbase
+### 3. Updated Container Architecture - EPICS base
 
 The `epicsbase` container is now the foundational layer for all backend containers. It includes:
-- EPICS
-- Python environment
+- EPICS 7.0.9
+- Python environment through UV
 - All shared dependencies
 
 **What this means for you:** Backend container builds are now more efficient through shared base layers.
