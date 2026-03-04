@@ -29,9 +29,9 @@ except:
 if (mongoAuth):
     client = MongoClient(
         'mongodb://%s:%s@%s' %
-        (MONGO_ROOT_USERNAME, MONGO_ROOT_PASSWORD, REPLICA_SET_MEMBERS[0]))
+                (MONGO_ROOT_USERNAME, MONGO_ROOT_PASSWORD, REPLICA_SET_MEMBERS[0]),directConnection=True)
 else:
-    client = MongoClient('mongodb://%s' % (REPLICA_SET_MEMBERS[0]))
+    client = MongoClient('mongodb://%s' % (REPLICA_SET_MEMBERS[0]),directConnection=True)
 
 config_document = {
     "_id": REPLICA_SET_NAME,
