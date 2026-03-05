@@ -40,5 +40,4 @@ COPY ./signalcli/signal_cli_rest_api/ signal_cli_rest_api/
 # Prepare mount point for signal-cli 
 RUN mkdir -p $HOME/.local/share/signal-cli
 
-
 CMD ["python", "./signal_cli_rest_api/main.py"]
