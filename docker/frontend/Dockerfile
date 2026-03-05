@@ -6,5 +6,6 @@ ADD ./ReactApp/vite.config.js /ReactApp/vite.config.js
 ADD  ./.env /ReactApp/
 RUN pnpm run build
 VOLUME /build
-CMD ["cp -R /ReactApp/dist/*","/build/"]
+ENTRYPOINT []
+CMD ["sh", "-c", "cp -R /ReactApp/dist/* /build/"]
 
