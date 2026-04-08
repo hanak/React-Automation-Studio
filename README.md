@@ -87,11 +87,6 @@ If you wish to create a standalone AlarmHandler project you should clone this pr
 
 https://github.com/React-Automation-Studio/React-Automation-Studio-Alarm-Handler-Standalone
 
-**Or try it out on Codespaces (Experimental):**
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/React-Automation-Studio/codespaces-demo?quickstart=1)
-
-
 Each of the Docker containers are deployed as micro services and environment variables can be configured to deploy the system on different ports, or to enable user authentication and authorisation or to serve the application on a unique URL or on the localhost. Separate Docker commands exist to load the development and production version. These containerised environments allows for precise versioning of packages used and prevents deployment dependency issues.
 
 The microservices that form part of React Automation Studio are shown in Fig. 1 and an overview of the system components are give below:
