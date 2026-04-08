@@ -22,7 +22,6 @@ from urllib import parse, request as urlrequest
 from werkzeug.routing import BaseConverter
 import numpy as np
 
-
 sys.path.insert(0, "../")
 sys.path.insert(0, "userAuthentication/")
 
@@ -70,7 +69,7 @@ REACT_DISABLE_STANDARD_LOGIN = os.getenv("VITE_DisableStandardLogin", None)
 
 log.info("")
 log.info("**************************************")
-log.info("React Automation Studio V7.0.0")
+log.info("React Automation Studio V8.0.0")
 log.info("")
 log.info("pvServer Environment Variables:")
 log.info("")

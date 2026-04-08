@@ -1,9 +1,10 @@
-FROM python:3.12.7
-# Install python dependencies
-WORKDIR /usr/src/app
+FROM epicsbase
 
-COPY mongoSetup/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+ADD ./mongoSetup /mongoSetup
+WORKDIR /mongoSetup
+ENV UV_LINK_MODE=copy
 
-COPY mongoSetup/*.py ./
-CMD ["python","main.py"]
+RUN --mount=type=cache,target=/opt/uv-cache/uv \
+    uv sync
+
+CMD ["uv", "run", "main.py"]
